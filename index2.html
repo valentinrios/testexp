@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Expertos - Compact UI + Multi Location + Profile Modal V2</title>
+    <style>
+        /* --- 1. VARIABLES --- */
+        :root {
+            --primary: #635bff;
+            --primary-hover: #4b45c6;
+            --bg-body: #f6f9fc;
+            --bg-surface: #ffffff;
+            --text-main: #0a2540;
+            --text-muted: #425466;
+            --border: #e6ebf1;
+            --overlay: rgba(10, 37, 64, 0.4);
+            --shadow: 0 2px 4px rgba(50,50,93,0.1);
+            --shadow-hover: 0 7px 14px rgba(50,50,93,0.1), 0 3px 6px rgba(0,0,0,0.08);
+            --hero-pattern: radial-gradient(#cbd5e1 1px, transparent 1px);
+            --tag-bg: #e4e7eb;
+            --tag-text: #0a2540;
+            --success: #2e7d32; 
+        }
+
+        [data-theme="dark"] {
+            --primary: #7a73ff;
+            --primary-hover: #9690ff;
+            --bg-body: #0f111a;
+            --bg-surface: #1c1f2e;
+            --text-main: #f6f9fc;
+            --text-muted: #94a3b8;
+            --border: #2d3348;
+            --overlay: rgba(0, 0, 0, 0.8);
+            --shadow: 0 4px 6px rgba(0,0,0,0.3);
+            --shadow-hover: 0 10px 20px rgba(0,0,0,0.5);
+            --hero-pattern: radial-gradient(#2d3348 1px, transparent 1px);
+            --tag-bg: #2d3348;
+            --tag-text: #f6f9fc;
+        }
+
+        * { box-sizing: border-box; transition: background-color 0.2s, color 0.2s; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-body); color: var(--text-muted); margin: 0; line-height: 1.5; }
+
+        /* --- NAVBAR --- */
+        nav {
+            background: var(--bg-surface); padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;
+        }
+        .brand { font-weight: 800; font-size: 1.2rem; color: var(--text-main); text-decoration: none; }
+        .theme-toggle { background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 5px 10px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.8rem; }
+        .theme-toggle:hover { background: var(--border); }
+
+        /* --- HERO COMPACT --- */
+        .hero {
+            text-align: center;
+            padding: 2.5rem 1rem 1.5rem; 
+            background-image: var(--hero-pattern);
+            background-size: 20px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 { color: var(--text-main); font-size: 1.8rem; margin: 0 0 1rem 0; letter-spacing: -0.5px; }
+        
+        /* Search Wrapper */
+        .search-wrapper {
+            background: var(--bg-surface); padding: 4px; border-radius: 50px;
+            box-shadow: var(--shadow); border: 1px solid var(--border);
+            max-width: 650px; margin: 0 auto 1rem; display: flex; align-items: center;
+            position: relative;
+        }
+        
+        .divider { width: 1px; height: 24px; background: var(--border); margin: 0 5px; }
+        input { flex: 1.5; border: none; background: transparent; padding: 0 1.2rem; font-size: 0.95rem; color: var(--text-main); outline: none; height: 40px; }
+        
+        .loc-trigger {
+            flex: 1; background: transparent; border: none; 
+            color: var(--text-main); font-weight: 500; font-size: 0.9rem;
+            cursor: pointer; height: 40px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 1rem; white-space: nowrap; overflow: hidden;
+        }
+        .loc-trigger:hover { color: var(--primary); }
+
+        button.btn-primary {
+            background: var(--primary); color: #fff; border: none; padding: 0 1.2rem;
+            border-radius: 30px; font-weight: 600; cursor: pointer; font-size: 0.9rem; height: 40px;
+        }
+        button.btn-primary:hover { background: var(--primary-hover); }
+
+        /* Tags */
+        .tags { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 0.5rem; }
+        .tag {
+            background: var(--tag-bg); color: var(--tag-text); padding: 4px 12px;
+            border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; font-weight: 500;
+        }
+        .tag:hover, .tag.active { background: rgba(99, 91, 255, 0.1); color: var(--primary); border-color: var(--primary); }
+
+        /* --- GRID AND CARDS --- */
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+        .grid-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .grid-header h2 { font-size: 1.2rem; color: var(--text-main); margin: 0; }
+        .count-badge { background: var(--tag-bg); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; color: var(--text-main); font-weight: bold; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+
+        .card {
+            background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px;
+            padding: 1.2rem; box-shadow: var(--shadow); display: flex; flex-direction: column; cursor: pointer;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); border-color: var(--primary); }
+        
+        .card-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem; }
+        .avatar { width: 40px; height: 40px; background: rgba(99, 91, 255, 0.1); color: var(--primary); border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; }
+        .rating { color: #ffb800; font-size: 0.9rem; font-weight: 600; }
+        
+        .card h3 { margin: 0 0 2px 0; font-size: 1rem; color: var(--text-main); }
+        
+        .meta-info { display: flex; gap: 8px; align-items: center; margin-bottom: 0.5rem; }
+        .role { font-size: 0.75rem; color: var(--primary); font-weight: 700; text-transform: uppercase; }
+        .loc-badge { font-size: 0.75rem; color: var(--text-muted); background: var(--tag-bg); padding: 2px 6px; border-radius: 4px; }
+
+        .desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1; }
+        
+        .card-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 0.8rem; border-top: 1px solid var(--border); }
+        .price { color: var(--text-main); font-weight: 700; }
+        .btn-sm { background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        .btn-sm:hover { background: var(--text-main); color: var(--bg-surface); }
+
+        /* --- BOTTOM SHEET (COMMON) --- */
+        .sheet-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay); z-index: 200;
+            opacity: 0; visibility: hidden; transition: 0.3s;
+            display: flex; justify-content: center; align-items: flex-end;
+        }
+
+        #profileOverlay { z-index: 210; } 
+        
+        .sheet-content {
+            background: var(--bg-surface); width: 100%; max-width: 500px;
+            border-radius: 20px 20px 0 0; padding: 1.5rem;
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 90vh; display: flex; flex-direction: column;
+            overflow-y: auto;
+        }
+
+        @media (min-width: 768px) {
+            .sheet-overlay { align-items: center; }
+            .sheet-content { border-radius: 12px; transform: translateY(20px); max-height: 85vh; }
+        }
+
+        .sheet-overlay.open { opacity: 1; visibility: visible; }
+        .sheet-overlay.open .sheet-content { transform: translateY(0); }
+
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        .sheet-title { font-weight: 700; color: var(--text-main); font-size: 1.1rem; }
+        .sheet-close { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+
+        /* Location List Styles */
+        .loc-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; }
+        .loc-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; color: var(--text-main); }
+        .loc-item:hover { color: var(--primary); }
+        .checkbox-custom { width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 4px; display: grid; place-items: center; transition: 0.2s; }
+        .loc-item.selected .checkbox-custom { background: var(--primary); border-color: var(--primary); }
+        .loc-item.selected .checkbox-custom::after { content: '✔'; color: white; font-size: 12px; }
+        .btn-apply { margin-top: 1rem; width: 100%; background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
+        /* --- PROFILE DETAIL STYLES --- */
+        .profile-header { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; }
+        .profile-avatar { width: 70px; height: 70px; font-size: 1.5rem; border-radius: 50%; background: #e0e8ff; color: var(--primary); display: grid; place-items: center; font-weight: 700; }
+        
+        /* New Link Rows Style */
+        .profile-links { display: flex; flex-direction: column; margin-bottom: 1.5rem; gap: 8px; }
+        .link-row {
+            display: flex; align-items: center; gap: 10px;
+            color: var(--text-main); text-decoration: none; font-size: 0.95rem; font-weight: 500;
+            padding: 8px 0; border-bottom: 1px solid var(--border);
+        }
+        .link-row:hover { color: var(--primary); }
+        .link-icon { color: var(--primary); width: 20px; text-align: center; }
+
+        .profile-actions { display: flex; gap: 10px; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .btn-action { flex: 1; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: center; border: none; font-size: 1rem; }
+        .btn-whatsapp { background-color: var(--success); color: white; }
+        .btn-call { background-color: var(--primary); color: white; }
+        .profile-stat { display: inline-flex; gap: 5px; align-items: center; font-size: 0.9rem; color: var(--text-muted); margin-right: 15px; margin-bottom: 5px;}
+
+        @media (max-width: 600px) {
+            .search-wrapper { flex-direction: column; padding: 8px; border-radius: 12px; }
+            .divider { width: 100%; height: 1px; margin: 8px 0; }
+            input, .loc-trigger, .btn-primary { width: 100%; text-align: center; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="#" class="brand">Expertos.</a>
+        <button class="theme-toggle" id="themeToggle">
+            <span id="themeIcon">☾</span> <span id="themeText">Oscuro</span>
+        </button>
+    </nav>
+
+    <header class="hero">
+        <h1>Encuentra el servicio que necesitas</h1>
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" placeholder="Buscar por nombre o servicio...">
+            <div class="divider"></div>
+            <button class="loc-trigger" onclick="openSheet()">
+                <span id="locLabel">📍 Toda Bogotá</span>
+                <span style="font-size: 0.8rem">▼</span>
+            </button>
+            <div class="divider"></div>
+            <button class="btn-primary" onclick="filterMain()">Buscar</button>
+        </div>
+        <div class="tags" id="tagsContainer"></div>
+    </header>
+
+    <div class="container">
+        <div class="grid-header">
+            <h2>Profesionales disponibles</h2>
+            <span class="count-badge" id="count">0</span>
+        </div>
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet(event)">
+        <div class="sheet-content">
+            <div class="sheet-header">
+                <span class="sheet-title">Filtrar por Ubicación</span>
+                <button class="sheet-close" onclick="closeSheet(null, true)">&times;</button>
+            </div>
+            <ul class="loc-list" id="locListContainer"></ul>
+            <button class="btn-apply" onclick="closeSheet(null, true)">Aplicar Filtros</button>
+        </div>
+    </div>
+
+    <div class="sheet-overlay" id="profileOverlay" onclick="closeProfile(event)">
+        <div class="sheet-content" id="profileContent"></div>
+    </div>
+
+    <script>
+        // --- DATA (Added website and maps properties) ---
+        const experts = [
+            { id: 1, name: "Carlos Ruiz", role: "Electricista", loc: "Suba", price: 45000, rating: 4.9, reviews: 120, desc: "Instalaciones eléctricas residenciales.", bio: "Soy electricista certificado con más de 10 años de experiencia.", website: "https://example.com/carlos", maps: "https://maps.google.com/?q=Suba,Bogota", ini: "CR" },
+            { id: 2, name: "Ana López", role: "Cerrajero", loc: "Usaquén", price: 30000, rating: 4.8, reviews: 85, desc: "Apertura de puertas sin romper.", bio: "Servicio de emergencia 24/7.", website: "", maps: "https://maps.google.com/?q=Usaquen", ini: "AL" },
+            { id: 3, name: "Roberto G.", role: "Plomero", loc: "Chapinero", price: 40000, rating: 4.7, reviews: 200, desc: "Reparación de fugas y grifería.", bio: "Soluciono cualquier problema de plomería.", website: "https://example.com/roberto", maps: "https://maps.google.com/?q=Chapinero", ini: "RG" },
+            { id: 4, name: "Tech Sol.", role: "Soporte PC", loc: "Teusaquillo", price: 35000, rating: 5.0, reviews: 42, desc: "Reparación de ordenadores.", bio: "Soporte técnico remoto y a domicilio.", website: "https://techsol.com", maps: "https://maps.google.com/?q=Teusaquillo", ini: "TS" },
+            { id: 5, name: "María Green", role: "Jardinería", loc: "Suba", price: 25000, rating: 4.9, reviews: 60, desc: "Mantenimiento de jardines.", bio: "Diseño y mantenimiento de zonas verdes.", website: "", maps: "https://maps.google.com/?q=Suba", ini: "MG" },
+            { id: 6, name: "Juan Motor", role: "Mecánico", loc: "Engativá", price: 50000, rating: 4.6, reviews: 15, desc: "Mecánica rápida a domicilio.", bio: "Desvaradas, cambio de batería.", website: "https://juanmecanico.com", maps: "https://maps.google.com/?q=Engativa", ini: "JM" },
+            { id: 7, name: "Laura V.", role: "Limpieza", loc: "Kennedy", price: 20000, rating: 4.8, reviews: 90, desc: "Limpieza profunda de hogar.", bio: "Servicio de aseo por días.", website: "", maps: "https://maps.google.com/?q=Kennedy", ini: "LV" },
+            { id: 8, name: "Pedro Pintor", role: "Pintor", loc: "Usaquén", price: 28000, rating: 4.5, reviews: 30, desc: "Pintura de interiores.", bio: "Pintura profesional para apartamentos.", website: "", maps: "https://maps.google.com/?q=Usaquen", ini: "PP" },
+        ];
+
+        const cats = ["Todos", "Electricista", "Cerrajero", "Plomero", "Soporte PC", "Mecánico"];
+        const locations = ["Usaquén", "Chapinero", "Suba", "Teusaquillo", "Engativá", "Kennedy"];
+
+        // --- GLOBAL STATE ---
+        let state = { search: "", category: "Todos", selectedLocations: [] };
+
+        // --- DOM REFERENCES ---
+        const grid = document.getElementById('grid');
+        const tagsDiv = document.getElementById('tagsContainer');
+        const searchInput = document.getElementById('searchInput');
+        const locLabel = document.getElementById('locLabel');
+        const sheetOverlay = document.getElementById('sheetOverlay');
+        const locListContainer = document.getElementById('locListContainer');
+        const profileOverlay = document.getElementById('profileOverlay');
+        const profileContent = document.getElementById('profileContent');
+
+        // --- THEME LOGIC ---
+        const toggleBtn = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        function setTheme(theme) {
+            html.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            const isDark = theme === 'dark';
+            document.getElementById('themeIcon').innerText = isDark ? '☀' : '☾';
+            document.getElementById('themeText').innerText = isDark ? 'Claro' : 'Oscuro';
+        }
+        toggleBtn.addEventListener('click', () => {
+            const current = html.getAttribute('data-theme') || 'light';
+            setTheme(current === 'light' ? 'dark' : 'light');
+        });
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        setTheme(savedTheme);
+
+        // --- RENDERING ---
+        function renderTags() {
+            tagsDiv.innerHTML = '';
+            cats.forEach(c => {
+                const t = document.createElement('div');
+                t.className = c === state.category ? 'tag active' : 'tag';
+                t.innerText = c;
+                t.onclick = () => { state.category = c; renderTags(); filterMain(); };
+                tagsDiv.appendChild(t);
+            });
+        }
+
+        function renderGrid(data) {
+            grid.innerHTML = '';
+            document.getElementById('count').innerText = data.length;
+            if(data.length === 0) { grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding: 2rem;">No se encontraron resultados.</div>'; return; }
+            data.forEach(ex => {
+                grid.innerHTML += `
+                    <div class="card" onclick="openProfile(${ex.id})">
+                        <div class="card-top">
+                            <div class="avatar">${ex.ini}</div>
+                            <div class="rating">★ ${ex.rating}</div>
+                        </div>
+                        <div>
+                            <h3>${ex.name}</h3>
+                            <div class="meta-info"><span class="role">${ex.role}</span><span class="loc-badge">📍 ${ex.loc}</span></div>
+                            <p class="desc">${ex.desc}</p>
+                        </div>
+                        <div class="card-foot">
+                            <span class="price">$${ex.price.toLocaleString()}<small>/min</small></span>
+                            <button class="btn-sm">Contactar</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function renderLocationList() {
+            locListContainer.innerHTML = '';
+            locations.forEach(loc => {
+                const isSelected = state.selectedLocations.includes(loc);
+                const item = document.createElement('li');
+                item.className = isSelected ? 'loc-item selected' : 'loc-item';
+                item.onclick = () => toggleLocation(loc);
+                item.innerHTML = `<span>${loc}</span><div class="checkbox-custom"></div>`;
+                locListContainer.appendChild(item);
+            });
+        }
+
+        // --- FILTER ---
+        function filterMain() {
+            const term = searchInput.value.toLowerCase();
+            const filtered = experts.filter(e => {
+                const matchText = e.name.toLowerCase().includes(term) || e.role.toLowerCase().includes(term) || e.desc.toLowerCase().includes(term);
+                const matchCat = state.category === 'Todos' || e.role === state.category;
+                const matchLoc = state.selectedLocations.length === 0 || state.selectedLocations.includes(e.loc);
+                return matchText && matchCat && matchLoc;
+            });
+            renderGrid(filtered);
+            updateLocLabel();
+        }
+
+        // --- LOCATION SHEET ---
+        function openSheet() { renderLocationList(); sheetOverlay.classList.add('open'); }
+        function closeSheet(event, force = false) { if (force || event.target === sheetOverlay) { sheetOverlay.classList.remove('open'); filterMain(); } }
+        function toggleLocation(loc) {
+            if (state.selectedLocations.includes(loc)) state.selectedLocations = state.selectedLocations.filter(l => l !== loc);
+            else state.selectedLocations.push(loc);
+            renderLocationList();
+        }
+        function updateLocLabel() {
+            const count = state.selectedLocations.length;
+            if (count === 0) locLabel.innerText = "📍 Toda Bogotá";
+            else if (count === 1) locLabel.innerText = `📍 ${state.selectedLocations[0]}`;
+            else locLabel.innerText = `📍 ${count} Ubicaciones`;
+        }
+
+        // --- PROFILE MODAL (UPDATED) ---
+        function openProfile(id) {
+            const ex = experts.find(e => e.id === id);
+            if(!ex) return;
+
+            // Determine if Website Link should be shown
+            const websiteHTML = ex.website ? 
+                `<a href="${ex.website}" target="_blank" class="link-row"><span class="link-icon">🌐</span> Ver Página Web</a>` : '';
+
+            // Inject updated HTML
+            profileContent.innerHTML = `
+                <div class="sheet-header">
+                    <span class="sheet-title">Perfil del Experto</span>
+                    <button class="sheet-close" onclick="closeProfile(null, true)">&times;</button>
+                </div>
+                
+                <div class="profile-header">
+                    <div class="profile-avatar">${ex.ini}</div>
+                    <div>
+                        <h2 style="margin:0; font-size:1.4rem; color: var(--text-main)">${ex.name}</h2>
+                        <span style="color:var(--primary); font-weight:700; font-size:0.9rem">${ex.role}</span>
+                        <div style="margin-top:5px; color:var(--text-muted); font-size:0.9rem">📍 ${ex.loc}</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1rem">
+                    <div class="profile-stat"><span style="color:#ffb800">★</span> ${ex.rating} (${ex.reviews} reseñas)</div>
+                    <div class="profile-stat">✅ Verificado</div>
+                    <div style="margin-top:5px; font-weight:600; color:var(--text-main); font-size:1rem;">💰 Desde $${ex.price.toLocaleString()} (Trabajo Mínimo)</div>
+                </div>
+
+                <div class="profile-links">
+                    ${websiteHTML}
+                    <a href="${ex.maps}" target="_blank" class="link-row">
+                        <span class="link-icon">📍</span> Ver en Google Maps (Reseñas)
+                    </a>
+                </div>
+
+                <h3 style="color:var(--text-main); font-size:1rem; margin-bottom:0.5rem">Acerca de mí</h3>
+                <p style="color:var(--text-muted); line-height:1.6; margin-bottom:2rem">${ex.bio || ex.desc}</p>
+                
+                <div class="profile-actions">
+                    <button class="btn-action btn-call" onclick="alert('Llamando a ${ex.name}...')">📞 Llamar</button>
+                    <button class="btn-action btn-whatsapp" onclick="alert('Abriendo WhatsApp...')">💬 WhatsApp</button>
+                </div>
+            `;
+            
+            profileOverlay.classList.add('open');
+        }
+
+        function closeProfile(event, force = false) {
+            if (force || event.target === profileOverlay) {
+                profileOverlay.classList.remove('open');
+            }
+        }
+
+        // --- INIT ---
+        searchInput.addEventListener('keyup', filterMain);
+        renderTags();
+        renderGrid(experts);
+    </script>
+</body>
+</html>
