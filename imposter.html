@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Juego del Impostor · Misiones</title>
+
+<style>
+  :root{
+    --bg:#0b1020;
+    --card:#121a33;
+    --text:#e9ecff;
+    --muted:#9aa3c7;
+    --accent:#7c5cff;
+    --danger:#ff3b6b;
+    --ok:#22c55e;
+    --border: rgba(255,255,255,.10);
+    --radius: 18px;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  body{
+    margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    background: radial-gradient(900px 500px at 15% 0%, rgba(124,92,255,.22), transparent 60%),
+                radial-gradient(900px 500px at 90% 10%, rgba(255,59,107,.16), transparent 55%),
+                radial-gradient(900px 700px at 50% 100%, rgba(34,197,94,.10), transparent 60%),
+                var(--bg);
+    color: var(--text);
+    padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom) 12px;
+  }
+  .app{ max-width: 980px; margin: 0 auto; padding: 12px 0; display:flex; flex-direction:column; gap:12px; }
+  header{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:14px 14px; background: rgba(18,26,51,.75);
+    border:1px solid var(--border); border-radius: var(--radius);
+    backdrop-filter: blur(10px);
+  }
+  .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
+  .logo{
+    width:38px;height:38px;border-radius:14px; flex:0 0 auto;
+    background: linear-gradient(135deg, rgba(124,92,255,1), rgba(255,59,107,1));
+    position:relative; overflow:hidden;
+  }
+  .logo::after{
+    content:""; position:absolute; inset:-16px;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), transparent 35%);
+    transform: rotate(12deg);
+  }
+  .titleWrap{ min-width:0; }
+  h1{ margin:0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .subtitle{ margin:2px 0 0; font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pill{
+    font-size:12px; color: var(--muted);
+    border:1px solid var(--border);
+    padding:8px 10px; border-radius:999px;
+    background: rgba(0,0,0,.18); white-space:nowrap;
+  }
+
+  .grid{ display:grid; grid-template-columns: 1fr; gap:12px; }
+  @media (min-width: 920px){ .grid{ grid-template-columns: 1.05fr .95fr; } }
+
+  .card{
+    background: rgba(18,26,51,.78);
+    border:1px solid var(--border);
+    border-radius: var(--radius);
+    overflow:hidden;
+    backdrop-filter: blur(10px);
+  }
+  .hd{
+    padding:13px 14px; border-bottom:1px solid var(--border);
+    background: rgba(0,0,0,.14);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .hd strong{ font-size:13px; letter-spacing:.2px; }
+  .bd{ padding:14px; }
+
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+  input, select, textarea{
+    width:100%; padding:12px 12px;
+    border-radius: 12px; border:1px solid var(--border);
+    background: rgba(0,0,0,.22); color: var(--text); outline:none;
+  }
+  textarea{ resize: vertical; min-height: 96px; }
+
+  .field{ flex:1 1 160px; min-width: 160px; }
+  .field.wide{ flex: 1 1 100%; min-width: 100%; }
+
+  .btn{
+    appearance:none; width:100%;
+    border: 1px solid var(--border);
+    background: rgba(124,92,255,.16);
+    color: var(--text);
+    padding: 12px 12px;
+    border-radius: 12px;
+    cursor:pointer;
+    font-weight: 900;
+    letter-spacing:.2px;
+    min-height: 44px;
+    user-select:none;
+  }
+  .btn:hover{ background: rgba(124,92,255,.22); }
+  .btn.secondary{ background: rgba(255,255,255,.06); }
+  .btn.secondary:hover{ background: rgba(255,255,255,.10); }
+  .btn.ok{ background: rgba(34,197,94,.14); }
+  .btn.ok:hover{ background: rgba(34,197,94,.18); }
+  .btn.danger{ background: rgba(255,59,107,.14); }
+  .btn.danger:hover{ background: rgba(255,59,107,.20); }
+
+  .hint{ color: var(--muted); font-size:12px; line-height:1.45; margin-top:8px; }
+
+  .screen{
+    padding: 16px;
+    border-radius: 18px;
+    border:1px solid var(--border);
+    background: rgba(0,0,0,.18);
+    min-height: 280px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    gap:12px;
+  }
+
+  .big{ font-size: 26px; margin:0; letter-spacing:.3px; }
+  @media (min-width: 420px){ .big{ font-size: 28px; } }
+  .muted{ color: var(--muted); }
+
+  .role{
+    width: min(560px, 100%);
+    border-radius: 18px;
+    border:1px solid var(--border);
+    background: rgba(18,26,51,.65);
+    padding: 16px;
+    text-align:left;
+  }
+  .badge{
+    display:inline-flex; gap:8px; align-items:center;
+    padding:8px 10px; border-radius:999px; font-size:12px;
+    border:1px solid var(--border); background: rgba(0,0,0,.22);
+    margin: 8px 0 10px;
+  }
+  .dot{ width:10px;height:10px;border-radius:999px; background: var(--accent); box-shadow: 0 0 0 6px rgba(124,92,255,.18); }
+  .dot.ok{ background: var(--ok); box-shadow: 0 0 0 6px rgba(34,197,94,.16); }
+  .dot.danger{ background: var(--danger); box-shadow: 0 0 0 6px rgba(255,59,107,.18); }
+
+  .word{
+    font-size: 22px;
+    font-weight: 950;
+    letter-spacing: .6px;
+    margin: 6px 0 0 0;
+  }
+
+  .divider{ height:1px; width:100%; background: var(--border); margin: 10px 0; }
+
+  .kpi{
+    display:grid; grid-template-columns: repeat(3,1fr); gap:10px; width:100%;
+  }
+  @media (max-width: 420px){ .kpi{ grid-template-columns: 1fr; } }
+  .kpi .box{
+    border:1px solid var(--border);
+    background: rgba(0,0,0,.18);
+    border-radius: 16px;
+    padding: 12px;
+    text-align:left;
+  }
+  .kpi .t{ font-size:12px; color:var(--muted); }
+  .kpi .v{ font-size:16px; font-weight:950; margin-top:6px; }
+
+  .hold{
+    width:min(560px,100%);
+    border:1px dashed rgba(255,255,255,.25);
+    background: rgba(0,0,0,.18);
+    border-radius: 16px;
+    padding: 14px;
+  }
+  .progress{
+    height:10px; width:100%;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background: rgba(0,0,0,.18);
+    overflow:hidden;
+    margin-top:10px;
+  }
+  .bar{
+    height:100%;
+    width:0%;
+    background: rgba(255,59,107,.55);
+  }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div class="titleWrap">
+        <h1>Juego del Impostor · Misiones</h1>
+        <div class="subtitle">Pásalo al siguiente jugador · tema secreto · todo local</div>
+      </div>
+    </div>
+    <div class="pill" id="pill">Sin partida</div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <div class="hd">
+        <strong>1) Configuración</strong>
+        <button class="btn secondary" id="btnReset" style="width:auto; padding:10px 12px;">Reiniciar</button>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <div class="field">
+            <label for="players">Jugadores (3–12)</label>
+            <input id="players" type="number" min="3" max="12" value="6" />
+          </div>
+          <div class="field">
+            <label for="impostors">Impostores</label>
+            <select id="impostors">
+              <option value="1" selected>1 impostor</option>
+              <option value="2">2 impostores (si ≥ 6)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <div class="field wide">
+            <label for="names">Nombres (uno por línea) · opcional</label>
+            <textarea id="names" placeholder="Ana&#10;Luis&#10;Carlos"></textarea>
+            <div class="hint">Si no pones nombres, se usan “Jugador 1, Jugador 2...”</div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <button class="btn ok" id="btnStart">Crear partida</button>
+        </div>
+        <div class="hint">
+          Reglas rápidas: tripulantes ven el tema y dan pistas sin decir la palabra. El impostor ve “???”.
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="hd">
+        <strong>2) Juego</strong>
+        <span class="pill" id="phase">—</span>
+      </div>
+      <div class="bd">
+        <div id="stage"></div>
+        <div class="hint" style="text-align:center;">Funciona offline. No se sube nada a internet.</div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const pill = $("pill");
+  const phasePill = $("phase");
+  const stage = $("stage");
+
+  const playersInput = $("players");
+  const impostorsSelect = $("impostors");
+  const namesTA = $("names");
+
+  const btnStart = $("btnStart");
+  const btnReset = $("btnReset");
+
+  // Lista GRANDE y PLANA (sin categorías)
+  const DEFAULT_WORDS = [
+    "Playa","Hospital","Aeropuerto","Restaurante","Cine","Estadio","Escuela","Oficina","Supermercado","Iglesia",
+    "Hotel","Gimnasio","Biblioteca","Museo","Parque","Banco","Taller mecánico","Barbería","Boda","Cumpleaños",
+    "Carnaval","Metro","Centro comercial","Piscina","Montaña","Desierto","Selva","Isla","Crucero","Laboratorio",
+    "Comisaría","Bomberos","Circo","Zoológico","Granja","Fábrica","Concierto","Teatro","Estudio de TV","Cancha",
+    "Terminal de buses","Puerto","Submarino","Avión","Helicóptero","Taxi","Bus","Tren","Bicicleta","Moto",
+    "Carretera","Puente","Túnel","Gasolinera","Peaje","Cafetería","Panadería","Pizzería","Sushi","Hamburguesería",
+    "Heladería","Mercado","Verdulería","Carnicería","Farmacia","Clínica","Dentista","Veterinaria","Guardería","Universidad",
+    "Examen","Entrevista","Reunión","Presentación","Fiesta","Mudanza","Remodelación",
+    "Apagón","Tormenta","Inundación","Terremoto","Volcán","Nevada","Sequía","Ola de calor","Ola de frío",
+    "Camping","Fogata","Senderismo","Ciclismo","Natación","Buceo","Pesca","Yoga",
+    "Fútbol","Béisbol","Baloncesto","Tenis","Voleibol","Boxeo","Karate","Taekwondo","Ajedrez",
+    "Cartas","Dominó","Rompecabezas","Videojuego","Control","Consola","Computadora","Laptop","Teclado","Mouse",
+    "Pantalla","Auriculares","Micrófono","Cámara","Fotografía","Video","Edición","Streaming","Podcast",
+    "Mensaje","Llamada","Correo","Paquete","Envío","Entrega","Suscripción","Factura","Impuesto","Multa",
+    "Pasaporte","Visa","Aduana","Migración","Embajada","Consulado","Notaría","Registro","Contrato","Firma",
+    "Llave","Candado","Puerta","Ventana","Cortina","Alfombra","Sofá","Silla","Mesa","Cama",
+    "Colchón","Almohada","Sábana","Toalla","Jabón","Shampoo","Perfume","Desodorante","Cepillo","Pasta dental",
+    "Espejo","Lámpara","Bombillo","Cable","Enchufe","Tomacorriente","Interruptor","Batería","Cargador","Router",
+    "Internet","WiFi","Bluetooth","GPS","Mapa","Brújula","Reloj","Alarma","Calendario",
+    "Secreto","Rumor","Chisme","Traición","Lealtad","Perdón","Promesa","Apuesta",
+    "Dinero","Moneda","Tarjeta","Cajero","Crédito","Débito","Ahorro","Inversión",
+    "Café","Té","Chocolate","Jugo","Agua","Refresco",
+    "Arepa","Empanada","Tacos","Pasta","Arroz","Sopa","Ensalada","Carne","Pollo","Pescado",
+    "Manzana","Banano","Uva","Mango","Piña","Naranja","Fresa","Sandía",
+    "Tomate","Cebolla","Ajo","Zanahoria","Papa","Lechuga","Pepino","Pimentón","Brócoli",
+    "Sal","Azúcar","Harina","Aceite","Vinagre","Salsa","Picante",
+    "Doctor","Enfermera","Profesor","Estudiante","Policía","Bombero","Chef","Mesero","Piloto","Mecánico",
+    "Electricista","Carpintero","Plomero","Abogado","Juez","Periodista","Actor","Cantante","Diseñador",
+    "Familia","Madre","Padre","Hija","Hijo","Abuela","Abuelo","Primo",
+    "Perro","Gato","Caballo","Vaca","Oveja","Cerdo","Gallina","Pato","Pez","Tortuga",
+    "Lluvia","Nube","Viento","Trueno","Relámpago","Arcoíris","Sol","Luna","Estrella",
+    "Bosque","Río","Lago","Mar","Océano","Cascada","Cueva","Valle",
+    "Libro","Revista","Periódico","Carta","Bolígrafo","Lápiz","Marcador",
+    "Robot","Dron","Satélite","Cohete","Nave","Inteligencia artificial","Algoritmo","Bug","Actualización",
+    "Navidad","Año Nuevo","Halloween","San Valentín",
+    "Cartera","Maleta","Mochila","Sombrero","Gorra","Chaqueta","Zapatos","Medias","Anillo"
+  ];
+
+  const state = {
+    phase: "idle", // idle | dealing | discussion | reveal
+    started: false,
+    players: 6,
+    impostorCount: 1,
+    names: [],
+    roles: [], // aligned with names index
+    secretWord: null,
+    currentIndex: 0,
+    roleShown: false,
+    hold: { active:false, t0:0, rafId:null, revealed:false }
+  };
+
+  function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+  function randInt(max){ return Math.floor(Math.random()*max); }
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function parseNames(count){
+    const raw = (namesTA.value || "").trim();
+    const list = raw ? raw.split("\n").map(s=>s.trim()).filter(Boolean) : [];
+    return Array.from({length:count}, (_,i)=> list[i] || `Jugador ${i+1}`);
+  }
+
+  function pickSecretWord(){
+    return DEFAULT_WORDS[randInt(DEFAULT_WORDS.length)];
+  }
+
+  function pickImpostors(playerCount, desiredCount){
+    const count = (desiredCount === 2 && playerCount >= 6) ? 2 : 1;
+    const picks = new Set();
+    while(picks.size < count) picks.add(randInt(playerCount));
+    return [...picks];
+  }
+
+  function buildRoles(playerCount, impostorIdxs){
+    const roles = Array(playerCount).fill("TRIPULANTE");
+    for(const i of impostorIdxs) roles[i] = "IMPOSTOR";
+    return roles;
+  }
+
+  function setPills(){
+    pill.textContent = state.started ? "Partida creada" : "Sin partida";
+    const map = { idle:"Sin partida", dealing:"Repartiendo roles", discussion:"Discusión", reveal:"Revelación" };
+    phasePill.textContent = map[state.phase] || "—";
+  }
+
+  function h(tag, attrs={}, ...children){
+    const el = document.createElement(tag);
+    for(const [k,v] of Object.entries(attrs)){
+      if(k==="class") el.className = v;
+      else if(k==="onclick") el.addEventListener("click", v);
+      else if(k==="onpointerdown") el.addEventListener("pointerdown", v);
+      else if(k==="onpointerup") el.addEventListener("pointerup", v);
+      else if(k==="onpointercancel") el.addEventListener("pointercancel", v);
+      else if(k==="onpointerleave") el.addEventListener("pointerleave", v);
+      else el.setAttribute(k, v);
+    }
+    for(const ch of children){
+      if(ch==null) continue;
+      el.appendChild(typeof ch==="string" ? document.createTextNode(ch) : ch);
+    }
+    return el;
+  }
+
+  function kpi(title, value){
+    return h("div", {class:"box"},
+      h("div", {class:"t"}, title),
+      h("div", {class:"v"}, value)
+    );
+  }
+
+  function renderIdle(){
+    return h("div", {class:"screen"},
+      h("p", {class:"muted", style:"margin:0; max-width:60ch;"},
+        "Crea una partida. Luego pásale el teléfono al Jugador 1 para ver su rol en secreto."
+      ),
+      h("div", {class:"kpi", style:"width:min(560px,100%);"},
+        kpi("Jugadores", String(state.players)),
+        kpi("Impostores", "—"),
+        kpi("Tema", "—")
+      )
+    );
+  }
+
+  function renderDealing(){
+    const i = state.currentIndex;
+    const name = state.names[i];
+    const role = state.roles[i];
+    const isImp = role === "IMPOSTOR";
+
+    const badge = h("div", {class:"badge"},
+      h("span", {class:"dot " + (isImp ? "danger" : "ok")}),
+      h("strong", {}, isImp ? "IMPOSTOR" : "TRIPULANTE")
+    );
+
+    const word = h("div", {},
+      h("div", {class:"muted", style:"font-size:12px;"}, "Misión (tema secreto):"),
+      h("div", {class:"word"}, isImp ? "???" : state.secretWord)
+    );
+
+    const explain = h("p", {class:"muted", style:"margin:10px 0 0; line-height:1.5;"},
+      isImp
+        ? "No conoces el tema. Escucha pistas y finge que sabes. Evita ser descubierto."
+        : "Da pistas sin decir la palabra literal. Detecta quién no sabe el tema."
+    );
+
+    const roleCard = h("div", {class:"role", style: state.roleShown ? "" : "display:none;"},
+      h("h2", {style:"margin:0 0 4px 0; font-size:18px;"}, "Tu rol es:"),
+      badge,
+      word,
+      h("div", {class:"divider"}),
+      explain,
+      h("div", {class:"divider"}),
+      h("p", {class:"muted", style:"margin:0; font-size:12px;"}, "Oculta esto antes de pasar el teléfono.")
+    );
+
+    const btnText = state.roleShown ? "Ocultar y pasar al siguiente" : "Ver mi rol";
+
+    return h("div", {class:"screen"},
+      h("p", {class:"muted", style:"margin:0;"}, "Turno de"),
+      h("h2", {class:"big", style:"margin:0;"}, name),
+      h("p", {class:"muted", style:"margin:0; max-width:60ch;"}, "Asegúrate de que nadie esté mirando 👀"),
+      roleCard,
+      h("div", {style:"width:min(560px,100%);"},
+        h("button", {
+          class:"btn " + (state.roleShown ? "secondary" : "ok"),
+          onclick: () => {
+            if(!state.roleShown){
+              state.roleShown = true;
+            } else {
+              state.roleShown = false;
+              state.currentIndex += 1;
+
+              // Al terminar el último jugador -> Discusión (sin tiempo)
+              if(state.currentIndex >= state.players){
+                state.phase = "discussion";
+              }
+            }
+            render();
+          }
+        }, btnText)
+      ),
+      h("div", {class:"kpi", style:"width:min(560px,100%);"},
+        kpi("Jugador", `${state.currentIndex+1}/${state.players}`),
+        kpi("Impostores", String(state.roles.filter(r=>r==="IMPOSTOR").length)),
+        kpi("Tema", "Oculto")
+      )
+    );
+  }
+
+  function renderDiscussion(){
+    return h("div", {class:"screen"},
+      h("h2", {class:"big", style:"margin:0;"}, "Discusión (sin tiempo)"),
+      h("p", {class:"muted", style:"margin:0; max-width:60ch; line-height:1.5;"},
+        "Den pistas sin decir la palabra. El impostor ve “???” e intentará adivinar y fingir."
+      ),
+      h("div", {style:"width:min(560px,100%); display:flex; flex-direction:column; gap:10px;"},
+        h("button", {
+          class:"btn danger",
+          onclick: () => {
+            state.phase = "reveal";
+            state.hold.revealed = false;
+            render();
+          }
+        }, "Ir a pantalla de revelación (oculta)"),
+        h("button", {
+          class:"btn secondary",
+          onclick: () => {
+            state.phase = "dealing";
+            state.currentIndex = 0;
+            state.roleShown = false;
+            render();
+          }
+        }, "Volver a ver roles (reinicia turnos)")
+      ),
+      h("div", {class:"kpi", style:"width:min(560px,100%);"},
+        kpi("Jugadores", String(state.players)),
+        kpi("Impostores", String(state.roles.filter(r=>r==="IMPOSTOR").length)),
+        kpi("Tema", "Solo tripulantes")
+      )
+    );
+  }
+
+  function stopHoldAnim(){
+    if(state.hold.rafId) cancelAnimationFrame(state.hold.rafId);
+    state.hold.rafId = null;
+    state.hold.active = false;
+  }
+
+  function renderReveal(){
+    const impostorNames = state.names
+      .map((n, idx) => ({n, r: state.roles[idx]}))
+      .filter(x => x.r === "IMPOSTOR")
+      .map(x => x.n)
+      .join(", ");
+
+    const holdSeconds = 2.0;
+
+    const bar = h("div", {class:"bar", id:"bar"});
+    const progress = h("div", {class:"progress"}, bar);
+
+    const hiddenBox = h("div", {class:"role", id:"secretBox", style: state.hold.revealed ? "" : "display:none;"},
+      h("div", {class:"badge"},
+        h("span", {class:"dot danger"}),
+        h("strong", {}, "IMPOSTOR(ES)")
+      ),
+      h("div", {class:"word"}, impostorNames || "—"),
+      h("div", {class:"divider"}),
+      h("div", {class:"muted", style:"font-size:12px;"}, "Tema de la ronda:"),
+      h("div", {class:"word", style:"font-size:18px;"}, state.secretWord || "—")
+    );
+
+    function updateHold(){
+      if(!state.hold.active) return;
+
+      const t = performance.now();
+      const elapsed = (t - state.hold.t0) / 1000;
+      const pct = Math.max(0, Math.min(1, elapsed / holdSeconds));
+
+      const barEl = document.getElementById("bar");
+      if(barEl) barEl.style.width = (pct * 100).toFixed(1) + "%";
+
+      if(pct >= 1){
+        state.hold.revealed = true;
+        stopHoldAnim();
+        render();
+        return;
+      }
+      state.hold.rafId = requestAnimationFrame(updateHold);
+    }
+
+    function holdStart(ev){
+      ev.preventDefault();
+      if(state.hold.revealed) return;
+      state.hold.active = true;
+      state.hold.t0 = performance.now();
+      state.hold.rafId = requestAnimationFrame(updateHold);
+    }
+
+    function holdEnd(){
+      if(state.hold.revealed) return;
+      stopHoldAnim();
+      const barEl = document.getElementById("bar");
+      if(barEl) barEl.style.width = "0%";
+    }
+
+    const holdArea = h("div", {
+        class:"hold",
+        onpointerdown: holdStart,
+        onpointerup: holdEnd,
+        onpointercancel: holdEnd,
+        onpointerleave: holdEnd
+      },
+      h("div", {style:"font-weight:950;"}, state.hold.revealed ? "Revelado" : "Mantén presionado 2s para revelar"),
+      h("div", {class:"muted", style:"font-size:12px; line-height:1.35; margin-top:6px;"},
+        "Esto evita que se revele por accidente. Ideal para después de votar."
+      ),
+      progress
+    );
+
+    return h("div", {class:"screen"},
+      h("h2", {class:"big", style:"margin:0;"}, "Revelación (segura)"),
+      h("p", {class:"muted", style:"margin:0; max-width:60ch; line-height:1.5;"},
+        "Primero voten. Luego, si quieren, revelen al impostor con el gesto de mantener presionado."
+      ),
+      holdArea,
+      hiddenBox,
+      h("div", {style:"width:min(560px,100%); display:flex; flex-direction:column; gap:10px;"},
+        h("button", {
+          class:"btn secondary",
+          onclick: () => { state.phase = "discussion"; render(); }
+        }, "Volver a discusión"),
+        h("button", {
+          class:"btn ok",
+          onclick: () => newGame()
+        }, "Nueva partida")
+      )
+    );
+  }
+
+  function render(){
+    setPills();
+    stage.innerHTML = "";
+
+    let node = null;
+    if(state.phase === "idle") node = renderIdle();
+    if(state.phase === "dealing") node = renderDealing();
+    if(state.phase === "discussion") node = renderDiscussion();
+    if(state.phase === "reveal") node = renderReveal();
+
+    stage.appendChild(node);
+  }
+
+  function newGame(){
+    stopHoldAnim();
+
+    const p = clamp(parseInt(playersInput.value || "6", 10), 3, 12);
+    const desiredImp = parseInt(impostorsSelect.value || "1", 10);
+
+    state.started = true;
+    state.players = p;
+    state.impostorCount = desiredImp;
+
+    state.names = parseNames(p);
+    state.secretWord = pickSecretWord();
+
+    const impostorIdxs = pickImpostors(p, desiredImp);
+    const roles = buildRoles(p, impostorIdxs);
+
+    // roles random de verdad, sin “último = especial”
+    state.roles = shuffle(roles);
+
+    state.currentIndex = 0;
+    state.roleShown = false;
+    state.hold.revealed = false;
+    state.phase = "dealing";
+
+    render();
+  }
+
+  function resetAll(){
+    stopHoldAnim();
+
+    state.started = false;
+    state.phase = "idle";
+
+    state.players = clamp(parseInt(playersInput.value || "6", 10), 3, 12);
+    state.impostorCount = parseInt(impostorsSelect.value || "1", 10);
+
+    state.names = [];
+    state.roles = [];
+    state.secretWord = null;
+    state.currentIndex = 0;
+    state.roleShown = false;
+    state.hold.revealed = false;
+
+    render();
+  }
+
+  btnStart.addEventListener("click", newGame);
+  btnReset.addEventListener("click", resetAll);
+
+  render();
+})();
+</script>
+</body>
+</html>
